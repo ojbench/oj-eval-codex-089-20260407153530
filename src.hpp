@@ -133,10 +133,12 @@ struct BuddyAllocator {
         if (!ok && right <= total_nodes) {
             ok = alloc_leftmost(right, dNode - 1, D, base_addr + half, half, out_addr);
         }
-        // Update parent state: if both children FULL, set FULL; else keep SPLIT
+        // Update parent state based on children: coalesce when both FREE
         if (left <= total_nodes && right <= total_nodes) {
             if (state[left] == FULL && state[right] == FULL) {
                 state[idx] = FULL;
+            } else if (state[left] == FREE && state[right] == FREE) {
+                state[idx] = FREE;
             } else {
                 state[idx] = SPLIT;
             }
@@ -172,10 +174,12 @@ struct BuddyAllocator {
         } else {
             if (right <= total_nodes) ok = alloc_at_exact(right, dNode - 1, D, base_addr + half, half, target_addr);
         }
-        // Update parent state if both children FULL
+        // Update parent state: FULL if both FULL, FREE if both FREE, otherwise SPLIT
         if (left <= total_nodes && right <= total_nodes) {
             if (state[left] == FULL && state[right] == FULL) {
                 state[idx] = FULL;
+            } else if (state[left] == FREE && state[right] == FREE) {
+                state[idx] = FREE;
             } else {
                 state[idx] = SPLIT;
             }
@@ -274,4 +278,3 @@ inline void free_at(int addr, int size) {
 }
 
 #endif // SRC_HPP_BUDDY_ALLOCATOR_2199
-
